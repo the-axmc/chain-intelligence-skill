@@ -1,0 +1,13 @@
+{
+  "name": "chain-intelligence",
+  "version": "1.0.0",
+  "description": "On-chain market intelligence using Chainlink data feeds",
+  "author": "Chain Intelligence Team",
+  "scripts": {
+    "collect": "python src/collector.py",
+    "report": "python src/reporter.py",
+    "analyze": "python src/analyzer.py",
+    "pdf": "python src/pdf.py"
+  },
+  "python_requires": ">=3.8"
+}

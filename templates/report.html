@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chain Intelligence Market Report</title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #1a237e;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .section {
+            margin: 30px 0;
+        }
+        .section h2 {
+            color: #1a237e;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            font-size: 18px;
+        }
+        .section h3 {
+            color: #37474f;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .token-name {
+            font-weight: bold;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .token-data {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .data-item {
+            text-align: center;
+        }
+        .data-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .data-value {
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .trend-up { color: #4caf50; }
+        .trend-down { color: #f44336; }
+        .trend-neutral { color: #9e9e9e; }
+        .opportunity, .risk {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .opportunity {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        .opportunity .type {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .risk {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+        .risk .type {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 11px;
+            color: #999;
+        }
+        .rating-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .rating-buy { background: #e8f5e9; color: #4caf50; }
+        .rating-hold { background: #fff3e0; color: #ff9800; }
+        .rating-sell { background: #ffebee; color: #f44336; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        th {
+            background: #1a237e;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Chain Intelligence Market Report</h1>
+        <p>Generated: {{ timestamp }}</p>
+        <p>Analysis Period: {{ timeframe }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <p>Market overview and key metrics for the analyzed period.</p>
+        
+        <div class="token-data">
+            <div class="data-item">
+                <div class="data-label">Total Market Cap</div>
+                <div class="data-value">${{ market_cap|default('N/A') }}</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Active Tokens</div>
+                <div class="data-value">{{ token_count|default('N/A') }}</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Gas Price</div>
+                <div class="data-value">{{ gas_price|default('N/A') }} Gwei</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Price Action</h2>
+        {% for token, data in price_action.items() %}
+        <div class="token-header">
+            <span class="token-name" style="background: {{ token_colors.get(token, '#333') }}; color: white;">
+                {{ token }}
+            </span>
+            <span class="rating-badge {{ 'rating-buy' if data.price_change_pct > 0 else 'rating-sell' if data.price_change_pct < 0 else 'rating-hold' }}">
+                {{ data.price_trend|title }}
+            </span>
+        </div>
+        <div class="token-data">
+            <div class="data-item">
+                <div class="data-label">Current Price</div>
+                <div class="data-value">${{ "%.2f"|format(data.current_price) }}</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">24h Change</div>
+                <div class="data-value {% if data.price_change_pct > 0 %}trend-up{% elif data.price_change_pct < 0 %}trend-down{% else %}trend-neutral{% endif %}">
+                    {{ "%.2f"|format(data.price_change_pct) }}%
+                </div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">24h Range</div>
+                <div class="data-value">${{ "%.2f"|format(data.low_24h) }} - ${{ "%.2f"|format(data.high_24h) }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Volume Analysis</h2>
+        {% for token, data in volume_trend.items() %}
+        <div class="token-header">
+            <span class="token-name" style="background: {{ token_colors.get(token, '#333') }}; color: white;">
+                {{ token }}
+            </span>
+            <span class="rating-badge rating-hold">
+                {{ data.trend.replace('_', ' ')|title }}
+            </span>
+        </div>
+        <div class="token-data">
+            <div class="data-item">
+                <div class="data-label">Current Volume</div>
+                <div class="data-value">${{ "%.2fM"|format(data.current_volume/1e6) }}</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">24h Avg Volume</div>
+                <div class="data-value">${{ "%.2fM"|format(data.average_24h/1e6) }}</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Volume Change</div>
+                <div class="data-value {{ 'trend-up' if data.volume_change_pct > 0 else 'trend-down' }}">
+                    {{ "%.2f"|format(data.volume_change_pct) }}%
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Volatility Analysis</h2>
+        {% for token, data in volatility.items() %}
+        <div class="token-header">
+            <span class="token-name" style="background: {{ token_colors.get(token, '#333') }}; color: white;">
+                {{ token }}
+            </span>
+            <span class="rating-badge rating-hold" style="background: #fff3e0; color: #ff9800;">
+                {{ data.level|upper }}
+            </span>
+        </div>
+        <div class="token-data">
+            <div class="data-item">
+                <div class="data-label">Historical Vol</div>
+                <div class="data-value">{{ "%.2f"|format(data.historical_volatility) }}%</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Current Vol</div>
+                <div class="data-value">{{ "%.2f"|format(data.current_volatility) }}%</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Level</div>
+                <div class="data-value">{{ data.level|upper }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Opportunities</h2>
+        {% if opportunities %}
+        {% for opp in opportunities %}
+        <div class="opportunity">
+            <div class="type">{{ opp.type|replace('_', ' ')|title }}</div>
+            <div><strong>Asset:</strong> {{ opp.asset }}</div>
+            <div><strong>Description:</strong> {{ opp.description }}</div>
+            <div><strong>Confidence:</strong> {{ opp.confidence|upper }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No opportunities detected in the current market data.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Risks</h2>
+        {% if risks %}
+        {% for risk in risks %}
+        <div class="risk">
+            <div class="type">{{ risk.type|replace('_', ' ')|title }}</div>
+            <div><strong>Asset:</strong> {{ risk.asset }}</div>
+            <div><strong>Description:</strong> {{ risk.description }}</div>
+            <div><strong>Severity:</strong> {{ risk.severity|upper }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No significant risks detected in the current market data.</p>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p>Generated by Chain Intelligence &copy; 2024</p>
+        <p>Analysis based on Chainlink Data Feeds and CoinGecko API</p>
+    </div>
+</body>
+</html>
