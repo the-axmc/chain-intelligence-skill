@@ -1,33 +1,46 @@
-# Upgrades To Complete
+# Production Upgrades
 
-This file tracks the remaining work for Chain Intelligence after the dashboard and report sync changes.
+This file tracks the work needed to move Chain Intelligence from a local dashboard into a fully managed production system with scheduled ingestion.
+
+## Target Production Shape
+
+- Cloud Scheduler triggers ingestion on a fixed cadence.
+- A managed job runs collection, analysis, and report generation.
+- The dashboard is served separately as a managed web service.
+- Market data lives in a managed database, not in a local SQLite file.
+- Generated PDFs and HTML snapshots live in durable object storage.
 
 ## High Priority
 
-- [ ] Replace polling with Server-Sent Events or WebSockets for instant dashboard updates.
-- [ ] Add a date-range picker so historical data is not limited to fixed timeframes only.
-- [ ] Add token comparison mode for side-by-side charts and metrics.
-- [ ] Add chart zoom / pan controls for longer history windows.
-- [ ] Add automated tests for the Flask dashboard routes and report snapshot generation.
+- [ ] Replace SQLite with a managed database such as Cloud SQL for PostgreSQL.
+- [ ] Make ingestion idempotent so scheduled jobs can safely run more than once.
+- [ ] Move report artifacts from the local filesystem to durable object storage.
+- [ ] Split the app into two deployable units: a dashboard service and an ingestion job.
+- [ ] Add a scheduled trigger through Cloud Scheduler or an equivalent managed scheduler.
+- [ ] Add secret management for API keys, database credentials, and storage access.
+- [ ] Add production-grade tests for ingestion, analysis, report generation, and dashboard routes.
 
 ## Medium Priority
 
-- [ ] Add archive filtering and search for generated reports.
-- [ ] Add report thumbnails or quick previews in the archive list.
-- [ ] Add export buttons for CSV and JSON from the dashboard.
-- [ ] Persist dashboard preferences such as token, timeframe, and refresh interval.
-- [ ] Add empty-state and error-state banners for failed refreshes or missing data.
+- [ ] Add deployment manifests for Cloud Run, Cloud SQL, and Cloud Storage.
+- [ ] Add a job runner entrypoint for scheduled ingestion and report generation.
+- [ ] Add archive browsing that reads report metadata from storage instead of local disk.
+- [ ] Add deployment health checks and startup probes for the dashboard service.
+- [ ] Add structured logging for ingestion runs, failures, and report publication.
+- [ ] Add monitoring or alerting for failed scheduled runs.
 
 ## Low Priority
 
-- [ ] Add deployment support for a production WSGI server.
-- [ ] Add authentication if the dashboard is exposed beyond local use.
-- [ ] Add dark/light theme toggle.
-- [ ] Add mobile-specific layout refinements for the charts and archive.
-- [ ] Add tooltips and richer annotations on the historical charts.
+- [ ] Add authentication if the dashboard will be exposed publicly.
+- [ ] Add retention rules for old report artifacts and historical snapshots.
+- [ ] Add a retry policy for transient API failures during ingestion.
+- [ ] Add a queue-based fallback if ingestion volume grows beyond a single scheduled job.
+- [ ] Add a lightweight admin page for checking the last successful ingest and report publish time.
 
-## Notes
+## Operational Notes
 
-- The PDF and HTML report generators should continue sharing the same data source and formatting contract.
-- Any new frontend feature should update both the live dashboard and the archived report flow where applicable.
-
+- The dashboard should only read data and render views.
+- Scheduled ingestion should be the only path that writes new market data.
+- Report generation should publish both the PDF and HTML snapshot after each run.
+- Cloud Scheduler uses at-least-once delivery, so duplicate-safe writes are required.
+- The system should prefer durable managed services over local files for anything that must survive restarts.
