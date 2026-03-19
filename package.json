@@ -7,7 +7,8 @@
     "collect": "python src/collector.py",
     "report": "python src/reporter.py",
     "analyze": "python src/analyzer.py",
-    "pdf": "python src/pdf.py"
+    "pdf": "python src/pdf.py",
+    "web": "python -m src.webapp"
   },
   "python_requires": ">=3.8"
 }

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Chain Intelligence"
+  short_description: "Audit and generate on-chain reports"
+  default_prompt: "Use $chain-intelligence to audit the Chain Intelligence report format and fix the market-report pipeline."
+
+policy:
+  allow_implicit_invocation: true

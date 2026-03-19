@@ -119,6 +119,18 @@ from src.pdf import generate_report
 generate_report('24h')
 ```
 
+The report generator also writes an HTML snapshot into the reports directory, so the latest report is visible in the web dashboard.
+
+### Open the Web Dashboard
+
+Serve the historical data and report archive locally:
+
+```bash
+./bin/web.sh
+```
+
+The dashboard auto-refreshes in place, so changing token/timeframe or generating a new report updates the charts and archive without reloading the page.
+
 ### Run the Full Demonstration
 
 ```bash
@@ -132,15 +144,18 @@ chain-intelligence/
 ├── bin/                      # Shell scripts for quick execution
 │   ├── collect.sh           # Run the data collector
 │   ├── analyze.sh           # Run the fundamental analyzer
-│   └── report.sh            # Generate a PDF report
+│   ├── report.sh            # Generate a PDF report
+│   └── web.sh               # Launch the web dashboard
 ├── src/                      # Python source modules
 │   ├── __init__.py
 │   ├── collector.py         # Data collection from Chainlink, exchanges, Aave
 │   ├── reporter.py          # On-demand metric retrieval
 │   ├── analyzer.py          # 24h fundamental analysis
 │   ├── pdf.py               # PDF report generation
+│   ├── webapp.py            # Flask dashboard and archive
 │   └── db.py                # SQLite database operations
 ├── templates/                # HTML templates for reports
+│   ├── dashboard.html       # Historical data dashboard
 │   └── report.html          # HTML report template
 ├── SKILL.md                  # This skill's documentation
 ├── README.md                 # This file

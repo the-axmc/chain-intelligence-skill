@@ -33,60 +33,83 @@ class FundamentalAnalyzer:
         self.tokens = ['BTC', 'ETH', 'LINK', 'SOL', 'AVAX', 'MATIC']
         self.hours = 24
     
-    def analyze_24h(self, tokens: Optional[List[str]] = None) -> Dict[str, Any]:
+    def _parse_timeframe(self, timeframe: str) -> int:
+        """Parse a timeframe string into hours."""
+        timeframe = timeframe.strip().lower()
+
+        if timeframe.endswith('d'):
+            return int(timeframe[:-1]) * 24
+        if timeframe.endswith('h'):
+            return int(timeframe[:-1])
+        if timeframe == '24h':
+            return 24
+        return 24
+
+    def analyze(self, timeframe: str = '24h', tokens: Optional[List[str]] = None) -> Dict[str, Any]:
         """
-        Analyze 24-hour market fundamentals.
+        Analyze market fundamentals for the requested timeframe.
         
         Args:
+            timeframe: Time window to analyze.
             tokens: List of tokens to analyze. If None, analyzes all default tokens.
             
         Returns:
             Dict with analysis results including opportunities and risks
         """
-        if tokens is None:
-            tokens = self.tokens
-        
-        results = {
-            'timestamp': int(datetime.now().timestamp()),
-            'analysis_period': '24h',
-            'price_action': {},
-            'volume_trend': {},
-            'volatility': {},
-            'opportunities': [],
-            'risks': []
-        }
-        
-        for token in tokens:
-            token_upper = token.upper()
-            token_history = get_prices(token_upper, hours=self.hours)
+        previous_hours = self.hours
+        self.hours = self._parse_timeframe(timeframe)
+
+        try:
+            if tokens is None:
+                tokens = self.tokens
             
-            if not token_history:
-                continue
+            results = {
+                'timestamp': int(datetime.now().timestamp()),
+                'analysis_period': timeframe,
+                'price_action': {},
+                'volume_trend': {},
+                'volatility': {},
+                'opportunities': [],
+                'risks': []
+            }
             
-            # Sort by timestamp descending
-            token_history.sort(key=lambda x: x['timestamp'], reverse=True)
+            for token in tokens:
+                token_upper = token.upper()
+                token_history = get_prices(token_upper, hours=self.hours)
+                
+                if not token_history:
+                    continue
+                
+                # Sort by timestamp descending
+                token_history.sort(key=lambda x: x['timestamp'], reverse=True)
+                
+                # Calculate price action metrics
+                price_metrics = self._analyze_price_action(token_upper, token_history)
+                if price_metrics:
+                    results['price_action'][token_upper] = price_metrics
+                
+                # Calculate volume metrics
+                volume_metrics = self._analyze_volume(token_upper, token_history)
+                if volume_metrics:
+                    results['volume_trend'][token_upper] = volume_metrics
+                
+                # Calculate volatility metrics
+                volatility_metrics = self._analyze_volatility(token_upper, token_history)
+                if volatility_metrics:
+                    results['volatility'][token_upper] = volatility_metrics
             
-            # Calculate price action metrics
-            price_metrics = self._analyze_price_action(token_upper, token_history)
-            if price_metrics:
-                results['price_action'][token_upper] = price_metrics
+            # Analyze relationships between tokens
+            results['opportunities'].extend(self._detect_opportunities(results))
+            results['risks'].extend(self._detect_risks(results))
             
-            # Calculate volume metrics
-            volume_metrics = self._analyze_volume(token_upper, token_history)
-            if volume_metrics:
-                results['volume_trend'][token_upper] = volume_metrics
-            
-            # Calculate volatility metrics
-            volatility_metrics = self._analyze_volatility(token_upper, token_history)
-            if volatility_metrics:
-                results['volatility'][token_upper] = volatility_metrics
-        
-        # Analyze relationships between tokens
-        results['opportunities'].extend(self._detect_opportunities(results))
-        results['risks'].extend(self._detect_risks(results))
-        
-        return results
-    
+            return results
+        finally:
+            self.hours = previous_hours
+
+    def analyze_24h(self, tokens: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Analyze 24-hour market fundamentals."""
+        return self.analyze('24h', tokens)
+
     def _analyze_price_action(self, token: str, history: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Analyze price action for a token."""
         if len(history) < 2:
@@ -379,10 +402,15 @@ def get_asset_score(token: str) -> Dict[str, Any]:
 
 if __name__ == '__main__':
     # Example usage
+    import sys
+
+    timeframe = sys.argv[1] if len(sys.argv) > 1 else '24h'
+    tokens = sys.argv[2:] if len(sys.argv) > 2 else None
+
     analyzer = FundamentalAnalyzer()
     
     # Run full analysis
-    results = analyzer.analyze_24h()
+    results = analyzer.analyze(timeframe, tokens)
     print(json.dumps(results, indent=2))
     
     # Get scores for tokens

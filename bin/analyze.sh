@@ -4,8 +4,8 @@
 
 set -e
 
-# Get script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get script directory (parent of bin)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC_DIR="${SCRIPT_DIR}/src"
 
 # Set up environment
@@ -18,4 +18,4 @@ cd "${SRC_DIR}"
 TIMEFRAME="${1:-24h}"
 
 # Run the analyzer
-python3 analyzer.py
+python3 analyzer.py "${TIMEFRAME}"

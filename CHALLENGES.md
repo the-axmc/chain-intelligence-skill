@@ -149,7 +149,7 @@ def fetch_price_cached(token, cache_key):
 
 ### 6. Data Quality Improvements
 
-#### anomaly Detection
+#### Anomaly Detection
 - Identify and flag data outliers
 - Detect API data inconsistencies
 - Cross-validate across multiple sources
@@ -220,10 +220,9 @@ def fetch_price_cached(token, cache_key):
 
 ## Long-term Roadmap
 
-1. **Q1 2024**: Add caching, basic technical indicators, CSV export
-2. **Q2 2024**: Implement alert system, improve PDF reports, add more data sources
-3. **Q3 2024**: Portfolio tracking, VaR calculations, pattern recognition
-4. **Q4 2024**: Web dashboard, advanced risk metrics, mobile app integration
+1. **Near-term**: Add caching, basic technical indicators, CSV export, and report formatting cleanup
+2. **Mid-term**: Implement alerting, expand data sources, and improve PDF/HTML report rendering
+3. **Long-term**: Portfolio tracking, VaR calculations, pattern recognition, and a web dashboard
 
 ## Contributing
 

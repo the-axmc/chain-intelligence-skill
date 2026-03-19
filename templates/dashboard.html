@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain Intelligence Dashboard</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-2: #0b1729;
+            --panel: rgba(8, 15, 28, 0.82);
+            --panel-strong: rgba(11, 23, 41, 0.96);
+            --border: rgba(148, 163, 184, 0.18);
+            --text: #e5eef9;
+            --muted: #94a3b8;
+            --soft: #cbd5e1;
+            --accent: #38bdf8;
+            --accent-2: #f59e0b;
+            --good: #22c55e;
+            --bad: #ef4444;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 32%),
+                radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 28%),
+                linear-gradient(180deg, #050b16 0%, var(--bg) 34%, var(--bg-2) 100%);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .shell {
+            width: min(1440px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 48px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.8fr);
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            overflow: hidden;
+        }
+
+        .panel-inner {
+            padding: 22px;
+        }
+
+        .masthead {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masthead::after {
+            content: "";
+            position: absolute;
+            inset: auto -40px -60px auto;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.20), transparent 68%);
+            pointer-events: none;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(56, 189, 248, 0.12);
+            color: #7dd3fc;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .title {
+            margin: 14px 0 8px;
+            font-size: clamp(30px, 4vw, 52px);
+            line-height: 0.98;
+            letter-spacing: -0.05em;
+        }
+
+        .subtitle {
+            margin: 0;
+            max-width: 72ch;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            margin-top: 18px;
+            color: var(--soft);
+            font-size: 13px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-card {
+            padding: 20px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(8, 15, 28, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .action-card h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: var(--soft);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            line-height: 1;
+            margin: 4px 0 10px;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-note {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .control {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .control label {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .control select,
+        .control button {
+            width: 100%;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text);
+            padding: 12px 14px;
+            font: inherit;
+        }
+
+        .control button {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #03111f;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease;
+        }
+
+        .control button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(56, 189, 248, 0.18);
+        }
+
+        .notice {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.24);
+            color: #bbf7d0;
+        }
+
+        .grid {
+            margin-top: 18px;
+            display: grid;
+            gap: 18px;
+            grid-template-columns: 1.4fr 0.95fr;
+            align-items: start;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-stat {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(7, 17, 31, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        .mini-stat .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .mini-stat .value {
+            font-size: 24px;
+            letter-spacing: -0.03em;
+        }
+
+        .mini-stat .hint {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: -0.03em;
+        }
+
+        .section-title span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .chart-card .panel-inner,
+        .archive-card .panel-inner,
+        .report-card .panel-inner,
+        .history-card .panel-inner,
+        .insight-card .panel-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .chart-wrap {
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(7, 12, 24, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            overflow: hidden;
+        }
+
+        .line-chart {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.68));
+        }
+
+        .line-chart rect {
+            fill: transparent;
+        }
+
+        .line-chart text {
+            fill: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .line-chart .chart-title {
+            font-size: 16px;
+            font-weight: 700;
+            fill: #f8fafc;
+        }
+
+        .line-chart line {
+            stroke: rgba(148, 163, 184, 0.16);
+            stroke-width: 1;
+        }
+
+        .line-chart .axis-labels text {
+            fill: #94a3b8;
+        }
+
+        .empty-chart {
+            padding: 24px;
+            min-height: 220px;
+            display: grid;
+            place-items: center;
+            gap: 8px;
+            color: var(--muted);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .history-table th,
+        .history-table td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .history-table th {
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .history-table tbody tr:hover {
+            background: rgba(148, 163, 184, 0.06);
+        }
+
+        .change-up { color: #4ade80; }
+        .change-down { color: #f87171; }
+        .change-neutral { color: #94a3b8; }
+
+        .report-frame {
+            width: 100%;
+            min-height: 680px;
+            border: 0;
+            border-radius: 18px;
+            background: white;
+        }
+
+        .archive-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .archive-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(7, 17, 31, 0.68);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .archive-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .archive-item .meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .archive-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.10);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            color: var(--soft);
+            font-size: 12px;
+        }
+
+        .chip.good {
+            color: #86efac;
+            background: rgba(34, 197, 94, 0.10);
+            border-color: rgba(34, 197, 94, 0.18);
+        }
+
+        .chip.bad {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.10);
+            border-color: rgba(239, 68, 68, 0.18);
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .insight-box {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(7, 17, 31, 0.70);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            line-height: 1.6;
+        }
+
+        .insight-box strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .footer {
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 1120px) {
+            .hero,
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .shell {
+                width: min(100% - 18px, 100%);
+                padding: 10px 0 28px;
+            }
+
+            .panel-inner {
+                padding: 16px;
+            }
+
+            .controls,
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .history-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell" id="dashboard-root" data-api-url="{{ url_for('dashboard_api') }}" data-refresh-interval-ms="{{ refresh_interval_ms }}">
+        <section class="hero">
+            <div class="panel masthead">
+                <div class="panel-inner">
+                    <div class="eyebrow">Chain Intelligence dashboard</div>
+                    <h1 class="title">Historical market data, live report snapshots, and one-click report generation.</h1>
+                    <p class="subtitle">
+                        Review the latest on-chain market history, switch tokens and timeframes, and keep the website in sync with every generated report.
+                    </p>
+                    <div class="hero-meta">
+                        <span class="chip">Selected token: <strong id="selected-token-value">{{ selected_token }}</strong></span>
+                        <span class="chip">Timeframe: <strong id="selected-timeframe-value">{{ timeframe }}</strong></span>
+                        <span class="chip">Last refreshed: <strong id="last-refreshed-value">{{ generated_now }}</strong></span>
+                    </div>
+
+                    <div class="notice" id="generated-notice" {% if not generated %}hidden{% endif %}>Report generated and published to the archive. The latest HTML snapshot is now embedded below.</div>
+
+                    <form class="controls" id="dashboard-controls" method="post" action="{{ url_for('generate') }}">
+                        <div class="control">
+                            <label for="token">Token</label>
+                            <select id="token-select" name="token">
+                                {% for token in available_tokens %}
+                                <option value="{{ token }}" {% if token == selected_token %}selected{% endif %}>{{ token }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="control">
+                            <label for="timeframe">Timeframe</label>
+                            <select id="timeframe-select" name="timeframe">
+                                {% for option in timeframe_options %}
+                                <option value="{{ option }}" {% if option == timeframe %}selected{% endif %}>{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="control">
+                            <label>&nbsp;</label>
+                            <button type="submit" id="generate-button">Generate report</button>
+                        </div>
+                        <div class="control">
+                            <label>&nbsp;</label>
+                            <a class="chip" id="latest-report-pdf" href="{{ latest_report_pdf_url or '#' }}" target="_blank">Latest PDF</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <div class="action-card">
+                    <h3>Selected token</h3>
+                    <div class="stat-value" id="selected-price-value">{{ selected_price_value }}</div>
+                    <div class="stat-note">
+                        <span class="chip {% if selected_change_class == 'up' %}good{% elif selected_change_class == 'down' %}bad{% endif %}" id="selected-change-chip">{{ selected_change_value }}</span>
+                        <span>current price change over the selected timeframe</span>
+                    </div>
+                </div>
+                <div class="action-card">
+                    <h3>Latest report</h3>
+                    <div class="stat-value" id="latest-report-title">{{ latest_report_title }}</div>
+                    <div class="stat-note">Updated <span id="latest-report-updated-at">{{ latest_report_updated_at }}</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 18px;">
+            <div class="panel-inner">
+                <div class="stats">
+                    {% for card in summary_cards %}
+                    <div class="mini-stat" data-summary-key="{{ card.key }}">
+                        <div class="label">{{ card.label }}</div>
+                        <div class="value summary-value">{{ card.value }}</div>
+                        <div class="hint">
+                            {% if card.label == 'Opportunities' %}
+                                Signals found in the latest analysis.
+                            {% elif card.label == 'Risks' %}
+                                Risk flags from the latest analysis.
+                            {% elif card.label == 'History points' %}
+                                Stored price observations for the selected token.
+                            {% else %}
+                                Pulled from the SQLite market snapshot.
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="grid">
+            <div class="stack">
+                <div class="panel chart-card">
+                    <div class="panel-inner">
+                        <div class="section-title">
+                            <div>
+                                <h2>{{ selected_token }} historical price</h2>
+                                <span>{{ selected_history|length }} points over {{ timeframe }}</span>
+                            </div>
+                            <div class="chip">{{ selected_token }} / {{ timeframe }}</div>
+                        </div>
+                        <div class="chart-wrap" id="price-chart-container">
+                            {{ price_chart|safe }}
+                        </div>
+                        <div class="section-title" style="margin-top: 4px;">
+                            <div>
+                                <h2>Recent rows</h2>
+                                <span>Most recent 12 records for {{ selected_token }}</span>
+                            </div>
+                        </div>
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Price</th>
+                                    <th>Volume</th>
+                                    <th>Market Cap</th>
+                                </tr>
+                            </thead>
+                            <tbody id="selected-history-body">
+                                {% for row in selected_history %}
+                                <tr>
+                                    <td>{{ row.timestamp }}</td>
+                                    <td>{{ row.price }}</td>
+                                    <td>{{ row.volume }}</td>
+                                    <td>{{ row.market_cap }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% if not selected_history %}
+                                <tr>
+                                    <td colspan="4">No historical rows available for this token/timeframe yet.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel chart-card">
+                    <div class="panel-inner">
+                        <div class="section-title">
+                            <div>
+                                <h2>Gas history</h2>
+                                <span>{{ gas_history_count }} observations over {{ timeframe }}</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrap" id="gas-chart-container">
+                            {{ gas_chart|safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel insight-card">
+                    <div class="panel-inner">
+                        <div class="section-title">
+                            <div>
+                                <h2>Latest signal</h2>
+                                <span>Top opportunity or risk from the current analysis</span>
+                            </div>
+                        </div>
+                        {% if selected_insight %}
+                        <div class="insight-box" id="latest-signal-box">
+                            <strong id="latest-signal-title">{{ selected_insight.type|replace('_', ' ')|title }}</strong>
+                            <div><span class="chip" id="latest-signal-asset">Asset {{ selected_insight.asset }}</span></div>
+                            <p id="latest-signal-description">{{ selected_insight.description }}</p>
+                            {% if selected_insight.confidence %}
+                            <div class="chip good" id="latest-signal-badge">Confidence {{ selected_insight.confidence|upper }}</div>
+                            {% elif selected_insight.severity %}
+                            <div class="chip bad" id="latest-signal-badge">Severity {{ selected_insight.severity|upper }}</div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="insight-box" id="latest-signal-box">No current opportunities or risks were detected for the selected timeframe.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stack">
+                <div class="panel report-card">
+                    <div class="panel-inner">
+                        <div class="section-title">
+                            <div>
+                                <h2>Latest report preview</h2>
+                                <span>HTML snapshot generated with the PDF report</span>
+                            </div>
+                            <div class="archive-links">
+                                <a class="chip" id="latest-report-html" href="{{ latest_report_html_url or '#' }}" target="_blank" {% if not latest_report_html_url %}hidden{% endif %}>Open HTML</a>
+                                <a class="chip" id="latest-report-pdf-inline" href="{{ latest_report_pdf_url or '#' }}" target="_blank" {% if not latest_report_pdf_url %}hidden{% endif %}>Download PDF</a>
+                            </div>
+                        </div>
+                        <div id="latest-report-preview">
+                            {% if latest_report_html_url %}
+                            <iframe class="report-frame" id="latest-report-frame" src="{{ latest_report_html_url }}?v={{ latest_report_mtime or '' }}" title="Latest market report"></iframe>
+                            {% else %}
+                            <div class="insight-box">
+                                No report has been generated yet. Use the generate button above to create the first snapshot.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel archive-card">
+                    <div class="panel-inner">
+                        <div class="section-title">
+                            <div>
+                                <h2>Report archive</h2>
+                                <span>Most recent generated files in the website</span>
+                            </div>
+                        </div>
+
+                        <div class="archive-list" id="report-archive-list">
+                            {% for report in report_history %}
+                            <div class="archive-item">
+                                <div>
+                                    <strong>{{ report.title }}</strong>
+                                    <div class="meta">{{ report.updated_at }} · {{ report.size_kb }} KB</div>
+                                </div>
+                                <div class="archive-links">
+                                    {% if report.html_url %}<a class="chip" href="{{ report.html_url }}" target="_blank">HTML</a>{% endif %}
+                                    <a class="chip" href="{{ report.pdf_url }}" target="_blank">PDF</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if not report_history %}
+                            <div class="insight-box">No archived reports yet. Generate a report to populate the archive.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            Chain Intelligence dashboard · historical SQLite data · automated report snapshots
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const root = document.getElementById('dashboard-root');
+            const apiUrl = root.dataset.apiUrl;
+            const refreshIntervalMs = Number(root.dataset.refreshIntervalMs || 30000);
+            const form = document.getElementById('dashboard-controls');
+            const tokenSelect = document.getElementById('token-select');
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const generateButton = document.getElementById('generate-button');
+            const generatedNotice = document.getElementById('generated-notice');
+            const latestSignalBox = document.getElementById('latest-signal-box');
+            const latestReportPreview = document.getElementById('latest-report-preview');
+
+            const state = {
+                token: tokenSelect.value,
+                timeframe: timeframeSelect.value,
+            };
+
+            let refreshHandle = null;
+            let refreshing = false;
+
+            function updateUrl() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('token', state.token);
+                url.searchParams.set('timeframe', state.timeframe);
+                url.searchParams.delete('generated');
+                window.history.replaceState({}, '', url);
+            }
+
+            function setText(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+
+            function escapeHtml(value) {
+                return String(value)
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
+            }
+
+            function setLink(id, href) {
+                const element = document.getElementById(id);
+                if (!element) {
+                    return;
+                }
+                if (href) {
+                    element.href = href;
+                    element.hidden = false;
+                } else {
+                    element.href = '#';
+                    element.hidden = true;
+                }
+            }
+
+            function renderSummary(cards) {
+                cards.forEach((card) => {
+                    const value = document.querySelector(`[data-summary-key="${card.key}"] .summary-value`);
+                    if (value) {
+                        value.textContent = card.value;
+                    }
+                });
+            }
+
+            function renderHistory(rows) {
+                const body = document.getElementById('selected-history-body');
+                if (!body) {
+                    return;
+                }
+
+                if (!rows.length) {
+                    body.innerHTML = '<tr><td colspan="4">No historical rows available for this token/timeframe yet.</td></tr>';
+                    return;
+                }
+
+                body.innerHTML = rows.map((row) => (
+                    `<tr>` +
+                    `<td>${escapeHtml(row.timestamp)}</td>` +
+                    `<td>${escapeHtml(row.price)}</td>` +
+                    `<td>${escapeHtml(row.volume)}</td>` +
+                    `<td>${escapeHtml(row.market_cap)}</td>` +
+                    `</tr>`
+                )).join('');
+            }
+
+            function renderArchive(items) {
+                const list = document.getElementById('report-archive-list');
+                if (!list) {
+                    return;
+                }
+
+                if (!items.length) {
+                    list.innerHTML = '<div class="insight-box">No archived reports yet. Generate a report to populate the archive.</div>';
+                    return;
+                }
+
+                list.innerHTML = items.map((item) => {
+                    const htmlLink = item.html_url ? `<a class="chip" href="${escapeHtml(item.html_url)}" target="_blank">HTML</a>` : '';
+                    return (
+                        `<div class="archive-item">` +
+                            `<div>` +
+                                `<strong>${escapeHtml(item.title)}</strong>` +
+                                `<div class="meta">${escapeHtml(item.updated_at)} · ${escapeHtml(item.size_kb)} KB</div>` +
+                            `</div>` +
+                            `<div class="archive-links">` +
+                                `${htmlLink}` +
+                                `<a class="chip" href="${escapeHtml(item.pdf_url)}" target="_blank">PDF</a>` +
+                            `</div>` +
+                        `</div>`
+                    );
+                }).join('');
+            }
+
+            function renderCharts(data) {
+                const priceChart = document.getElementById('price-chart-container');
+                const gasChart = document.getElementById('gas-chart-container');
+                if (priceChart) {
+                    priceChart.innerHTML = data.price_chart;
+                }
+                if (gasChart) {
+                    gasChart.innerHTML = data.gas_chart;
+                }
+            }
+
+            function renderSignal(signal) {
+                if (!latestSignalBox) {
+                    return;
+                }
+
+                if (!signal) {
+                    latestSignalBox.className = 'insight-box';
+                    latestSignalBox.innerHTML = 'No current opportunities or risks were detected for the selected timeframe.';
+                    return;
+                }
+
+                const title = String(signal.type || 'Signal').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                const asset = signal.asset || 'N/A';
+                const description = signal.description || 'N/A';
+                const badge = signal.confidence
+                    ? `Confidence ${String(signal.confidence).toUpperCase()}`
+                    : signal.severity
+                        ? `Severity ${String(signal.severity).toUpperCase()}`
+                        : '';
+                const badgeClass = signal.confidence ? 'chip good' : 'chip bad';
+
+                latestSignalBox.className = 'insight-box';
+                latestSignalBox.innerHTML = (
+                    `<strong id="latest-signal-title">${escapeHtml(title)}</strong>` +
+                    `<div><span class="chip" id="latest-signal-asset">Asset ${escapeHtml(asset)}</span></div>` +
+                    `<p id="latest-signal-description">${escapeHtml(description)}</p>` +
+                    (badge ? `<div class="${badgeClass}" id="latest-signal-badge">${escapeHtml(badge)}</div>` : '')
+                );
+            }
+
+            function renderPreview(data) {
+                if (!latestReportPreview) {
+                    return;
+                }
+
+                if (!data.latest_report_html_url) {
+                    latestReportPreview.innerHTML = '<div class="insight-box">No report has been generated yet. Use the generate button above to create the first snapshot.</div>';
+                    return;
+                }
+
+                const cacheBust = data.latest_report_mtime || Date.now();
+                latestReportPreview.innerHTML = (
+                    `<iframe class="report-frame" id="latest-report-frame" ` +
+                    `src="${escapeHtml(data.latest_report_html_url)}?v=${encodeURIComponent(cacheBust)}" ` +
+                    `title="Latest market report"></iframe>`
+                );
+            }
+
+            function render(data) {
+                state.token = data.selected_token;
+                state.timeframe = data.timeframe;
+                tokenSelect.value = state.token;
+                timeframeSelect.value = state.timeframe;
+
+                updateUrl();
+
+                setText('selected-token-value', data.selected_token);
+                setText('selected-timeframe-value', data.timeframe);
+                setText('last-refreshed-value', data.generated_now);
+                setText('selected-price-value', data.selected_price_value);
+                setText('selected-change-chip', data.selected_change_value);
+                setText('latest-report-title', data.latest_report_title);
+                setText('latest-report-updated-at', data.latest_report_updated_at);
+
+                const changeChip = document.getElementById('selected-change-chip');
+                if (changeChip) {
+                    changeChip.classList.remove('good', 'bad');
+                    if (data.selected_change_class === 'up') {
+                        changeChip.classList.add('good');
+                    } else if (data.selected_change_class === 'down') {
+                        changeChip.classList.add('bad');
+                    }
+                }
+
+                renderSummary(data.summary_cards || []);
+                renderHistory(data.selected_history || []);
+                renderCharts(data);
+                renderArchive(data.report_history || []);
+                renderSignal(data.selected_insight);
+                renderPreview(data);
+
+                setLink('latest-report-html', data.latest_report_html_url);
+                setLink('latest-report-pdf', data.latest_report_pdf_url);
+                setLink('latest-report-pdf-inline', data.latest_report_pdf_url);
+            }
+
+            async function refreshDashboard() {
+                if (refreshing) {
+                    return;
+                }
+
+                if (refreshHandle) {
+                    window.clearTimeout(refreshHandle);
+                    refreshHandle = null;
+                }
+
+                refreshing = true;
+                try {
+                    const url = new URL(apiUrl, window.location.origin);
+                    url.searchParams.set('token', state.token);
+                    url.searchParams.set('timeframe', state.timeframe);
+
+                    const response = await fetch(url.toString(), {
+                        headers: { 'Accept': 'application/json' },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Dashboard refresh failed: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    render(data);
+                } catch (error) {
+                    console.warn(error);
+                } finally {
+                    refreshing = false;
+                    refreshHandle = window.setTimeout(refreshDashboard, refreshIntervalMs);
+                }
+            }
+
+            async function generateReport(event) {
+                event.preventDefault();
+
+                state.token = tokenSelect.value;
+                state.timeframe = timeframeSelect.value;
+
+                generateButton.disabled = true;
+                const previousLabel = generateButton.textContent;
+                generateButton.textContent = 'Generating...';
+
+                try {
+                    const formData = new FormData();
+                    formData.set('token', state.token);
+                    formData.set('timeframe', state.timeframe);
+
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Report generation failed: ${response.status}`);
+                    }
+
+                    generatedNotice.hidden = false;
+                    generatedNotice.textContent = 'Report generated and published to the archive. The latest HTML snapshot is now embedded below.';
+                    await refreshDashboard();
+                } catch (error) {
+                    console.error(error);
+                    generatedNotice.hidden = false;
+                    generatedNotice.textContent = 'Report generation failed. Check the server logs and try again.';
+                } finally {
+                    generateButton.disabled = false;
+                    generateButton.textContent = previousLabel;
+                }
+            }
+
+            tokenSelect.addEventListener('change', () => {
+                state.token = tokenSelect.value;
+                refreshDashboard();
+            });
+
+            timeframeSelect.addEventListener('change', () => {
+                state.timeframe = timeframeSelect.value;
+                refreshDashboard();
+            });
+
+            form.addEventListener('submit', generateReport);
+
+            window.addEventListener('beforeunload', () => {
+                if (refreshHandle) {
+                    window.clearTimeout(refreshHandle);
+                }
+            });
+
+            refreshDashboard();
+        }());
+    </script>
+</body>
+</html>
